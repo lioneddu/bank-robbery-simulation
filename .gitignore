@@ -1,0 +1,22 @@
+# Build output
+build/
+dist/
+out/
+site/
+target/
+*.class
+
+# IDE
+nbproject/private/
+.idea/
+*.iml
+.vscode/
+
+# Credenziali locali: NON committare mai
+work/project.properties
+
+# Varie
+*~
+~*
+.DS_Store
+Thumbs.db

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bank Robbery – multi-agent simulation</title>
+  <script src="https://cjrtnc.leaningtech.com/5.0/loader.js"></script>
+  <style>
+    :root { color-scheme: light dark; }
+    body { margin: 0; font-family: system-ui, sans-serif; background: #1d2024; color: #e8e8e8; }
+    header { padding: 12px 20px; display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 24px; }
+    header h1 { margin: 0; font-size: 1.3rem; }
+    header p { margin: 0; color: #b8bcc2; font-size: 0.95rem; }
+    header a { color: #8ab4f8; }
+    #controls { padding: 0 20px 12px; display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+    #controls label { font-size: 0.9rem; }
+    #controls input { width: 3.5em; }
+    #controls button { padding: 6px 16px; font-size: 1rem; cursor: pointer; }
+    #status { font-size: 0.9rem; color: #b8bcc2; }
+    /* The Java "screen": the map (1152x720) and, on the right, the agents' windows */
+    #display { width: max(100%, 1460px); height: 900px; background: #2b2f34; }
+    footer { padding: 10px 20px; font-size: 0.85rem; color: #9aa0a6; }
+    footer a { color: #8ab4f8; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Bank Robbery</h1>
+    <p>Multi-agent simulation in Java/Swing: clients, employees, thieves and guards move with A*
+      and communicate only through messages, coordinated by a Supervisor.</p>
+    <p><a id="repo" href="#">Source code</a></p>
+  </header>
+
+  <div id="controls">
+    <label>Clients <input id="clients" type="number" min="0" max="10" value="3"></label>
+    <label>Employees <input id="employees" type="number" min="0" max="5" value="2"></label>
+    <label>Thieves <input id="thieves" type="number" min="0" max="5" value="2"></label>
+    <label>Guards <input id="guards" type="number" min="0" max="4" value="1"></label>
+    <button id="start">Start the simulation</button>
+    <span id="status">The first start downloads a Java Virtual Machine into the browser: it may take a few seconds.</span>
+  </div>
+
+  <div id="display"></div>
+
+  <footer>
+    Each agent opens a small window with its own neighbourhood; the "Bank Robbery" window shows
+    the whole map. Reload the page to start over.
+    <br>Built with <a href="https://cheerpj.com/">CheerpJ</a>, the in-browser JVM by Leaning Technologies.
+  </footer>
+
+  <script>
+    // On GitHub Pages the site is served from https://<user>.github.io/<repository>/
+    const m = location.hostname.match(/^([^.]+)\.github\.io$/);
+    const repoName = location.pathname.split("/").filter(Boolean)[0];
+    if (m && repoName) {
+      document.getElementById("repo").href = `https://github.com/${m[1]}/${repoName}`;
+    } else {
+      document.getElementById("repo").remove();
+    }
+
+    // In CheerpJ "/app/" maps to the root of the web server
+    const base = "/app" + location.pathname.replace(/[^/]*$/, "");
+    const statusEl = document.getElementById("status");
+    const startBtn = document.getElementById("start");
+
+    function value(id) {
+      return String(Math.max(0, parseInt(document.getElementById(id).value, 10) || 0));
+    }
+
+    startBtn.addEventListener("click", async () => {
+      startBtn.disabled = true;
+      for (const el of document.querySelectorAll("#controls input")) el.disabled = true;
+      statusEl.textContent = "Loading the JVM…";
+      try {
+        await cheerpjInit({ version: 11, status: "splash" });
+        cheerpjCreateDisplay(-1, -1, document.getElementById("display"));
+        statusEl.textContent = "Simulation running. Reload the page to start over.";
+        await cheerpjRunJar(base + "bank-robbery.jar",
+          "--workdir", base + "work",
+          "--clients", value("clients"),
+          "--employees", value("employees"),
+          "--thieves", value("thieves"),
+          "--guards", value("guards"),
+          "--delay", "2000");
+      } catch (e) {
+        console.error(e);
+        statusEl.textContent = "Start-up error: " + e;
+      }
+    });
+  </script>
+</body>
+</html>
